@@ -1,63 +1,50 @@
+"""Image Resizer"""
+
 import os
 import time
-from PIL import Image
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 
-""" ===========================================
+from PIL import Image
 
-
-$$$$$$\                                                   $$$$$$$\                      $$\                                     
-\_$$  _|                                                  $$  __$$\                     \__|                                    
-  $$ |  $$$$$$\$$$$\   $$$$$$\   $$$$$$\   $$$$$$\        $$ |  $$ | $$$$$$\   $$$$$$$\ $$\ $$$$$$$$\  $$$$$$\   $$$$$$\        
-  $$ |  $$  _$$  _$$\  \____$$\ $$  __$$\ $$  __$$\       $$$$$$$  |$$  __$$\ $$  _____|$$ |\____$$  |$$  __$$\ $$  __$$\       
-  $$ |  $$ / $$ / $$ | $$$$$$$ |$$ /  $$ |$$$$$$$$ |      $$  __$$< $$$$$$$$ |\$$$$$$\  $$ |  $$$$ _/ $$$$$$$$ |$$ |  \__|      
-  $$ |  $$ | $$ | $$ |$$  __$$ |$$ |  $$ |$$   ____|      $$ |  $$ |$$   ____| \____$$\ $$ | $$  _/   $$   ____|$$ |            
-$$$$$$\ $$ | $$ | $$ |\$$$$$$$ |\$$$$$$$ |\$$$$$$$\       $$ |  $$ |\$$$$$$$\ $$$$$$$  |$$ |$$$$$$$$\ \$$$$$$$\ $$ |            
-\______|\__| \__| \__| \_______| \____$$ | \_______|      \__|  \__| \_______|\_______/ \__|\________| \_______|\__|            
-                                $$\   $$ |                                                                                      
-                                \$$$$$$  |                                                                                      
-                                 \______/                                                                                       
-
+#===========================================
 # Image Resizer - A batch image resizing tool
-# 
-# This Python script allows you to batch resize images in a specified input folder 
-# and save them in an output folder, resizing each image to multiple predefined 
-# dimensions. It supports multiple image formats such as PNG, JPG, and JPEG. 
-# The script utilizes multithreading to process images concurrently, improving 
+#
+# This Python script allows you to batch resize images in a specified input folder
+# and save them in an output folder, resizing each image to multiple predefined
+# dimensions. It supports multiple image formats such as PNG, JPG, and JPEG.
+# The script utilizes multithreading to process images concurrently, improving
 # performance for large image sets.
-# 
+#
 # Features:
 # - Resize images to multiple sizes while maintaining aspect ratio.
 # - Process images concurrently using threading for faster performance.
 # - Supports common image formats (PNG, JPG, JPEG).
 # - Saves resized images in the same directory structure as the original files.
-# 
+#
 # License:
 # This project is licensed under the MIT License.
 #
 # Happy Resizing
-# 
+#
 # =========================================== """
 
 # Configuration Variables
-input_folder = "Imgs"  # Folder containing the original images
-output_folder = "resized_images"  # Folder to save resized images
-desired_widths = [100, 300, 500, 2000, 5000]  # Desired sizes for resizing
+INPUT_FOLDER = "Imgs"  # Folder containing the original images
+OUTPUT_FOLDER = "resized_images"  # Folder to save resized images
+DESIRED_WIDTHS = [100, 300, 500, 2000, 5000]  # Desired sizes for resizing
 
 # Constants
 VALID_IMAGE_EXTENSIONS = ('png', 'jpg', 'jpeg')  # Supported image formats
 
-#global Variables
-counter = 0
-counter_lock = Lock()
+global count
+count = 0
 
 def resize_image(input_path, output_path, sizes):
     """
     Resizes the image at input_path to the specified sizes and saves them to output_path.
     """
-   
-    global counter, counter_lock
+    counter_lock = Lock()
 
     # Ensure sizes is a list, even if a single size is passed
     if not isinstance(sizes, list):
@@ -94,11 +81,15 @@ def resize_image(input_path, output_path, sizes):
 
             # Increment the counter and display progress
             with counter_lock:
-                counter += 1
-                print(f"Resized {counter} images so far...", end='\r')
+                count += 1
+                print(f"Resized {count} images so far...", end='\r')
 
-    except Exception as e:
-        print(f"Error processing {input_path}: {e}")
+    except FileNotFoundError as e:
+        print(f"File not found: {input_path} - {e}")
+    except IOError as e:
+        print(f"I/O error occurred while processing {input_path}: {e}")
+    except ValueError as e:
+        print(f"Value error while processing {input_path}: {e}")
 
 
 def process_file(args):
@@ -115,20 +106,16 @@ def batch_resize_nested(input_folder, output_folder, sizes, max_threads=None):
     Utilizes multiple threads to process images concurrently.
     """
 
-    global counter
-
     print("""
-$$$$$$\                                                   $$$$$$$\                      $$\                                     
-\_$$  _|                                                  $$  __$$\                     \__|                                    
-  $$ |  $$$$$$\$$$$\   $$$$$$\   $$$$$$\   $$$$$$\        $$ |  $$ | $$$$$$\   $$$$$$$\ $$\ $$$$$$$$\  $$$$$$\   $$$$$$\        
-  $$ |  $$  _$$  _$$\  \____$$\ $$  __$$\ $$  __$$\       $$$$$$$  |$$  __$$\ $$  _____|$$ |\____$$  |$$  __$$\ $$  __$$\       
-  $$ |  $$ / $$ / $$ | $$$$$$$ |$$ /  $$ |$$$$$$$$ |      $$  __$$< $$$$$$$$ |\$$$$$$\  $$ |  $$$$ _/ $$$$$$$$ |$$ |  \__|      
-  $$ |  $$ | $$ | $$ |$$  __$$ |$$ |  $$ |$$   ____|      $$ |  $$ |$$   ____| \____$$\ $$ | $$  _/   $$   ____|$$ |            
-$$$$$$\ $$ | $$ | $$ |\$$$$$$$ |\$$$$$$$ |\$$$$$$$\       $$ |  $$ |\$$$$$$$\ $$$$$$$  |$$ |$$$$$$$$\ \$$$$$$$\ $$ |            
-\______|\__| \__| \__| \_______| \____$$ | \_______|      \__|  \__| \_______|\_______/ \__|\________| \_______|\__|            
-                                $$\   $$ |                                                                                      
-                                \$$$$$$  |                                                                                      
-                                 \______/           
+
+###                                ######                                          
+ #  #    #   ##    ####  ######    #     # ######  ####  # ###### ###### #####     
+ #  ##  ##  #  #  #    # #         #     # #      #      #     #  #      #    #    
+ #  # ## # #    # #      #####     ######  #####   ####  #    #   #####  #    #    
+ #  #    # ###### #  ### #         #   #   #           # #   #    #      #####     
+ #  #    # #    # #    # #         #    #  #      #    # #  #     #      #   #     
+### #    # #    #  ####  ######    #     # ######  ####  # ###### ###### #    #    
+  
 Copyright (c) 2024 Owen Rempel          
           """)
 
@@ -157,9 +144,9 @@ Copyright (c) 2024 Owen Rempel
     end_time = time.time()  # Record the end time
     total_time = end_time - start_time
     print(f"Batch resizing completed in {total_time:.2f} seconds.")
-    print(f"Total images resized: {counter}")
+    print(f"Total images resized: {count}")
 
 
 # Ensure the script is not being used as a library
 if __name__ == "__main__":
-    batch_resize_nested(input_folder, output_folder, desired_widths)
+    batch_resize_nested(INPUT_FOLDER, OUTPUT_FOLDER, DESIRED_WIDTHS)
