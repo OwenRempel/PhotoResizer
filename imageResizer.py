@@ -4,6 +4,40 @@ from PIL import Image
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 
+""" ===========================================
+
+
+$$$$$$\                                                   $$$$$$$\                      $$\                                     
+\_$$  _|                                                  $$  __$$\                     \__|                                    
+  $$ |  $$$$$$\$$$$\   $$$$$$\   $$$$$$\   $$$$$$\        $$ |  $$ | $$$$$$\   $$$$$$$\ $$\ $$$$$$$$\  $$$$$$\   $$$$$$\        
+  $$ |  $$  _$$  _$$\  \____$$\ $$  __$$\ $$  __$$\       $$$$$$$  |$$  __$$\ $$  _____|$$ |\____$$  |$$  __$$\ $$  __$$\       
+  $$ |  $$ / $$ / $$ | $$$$$$$ |$$ /  $$ |$$$$$$$$ |      $$  __$$< $$$$$$$$ |\$$$$$$\  $$ |  $$$$ _/ $$$$$$$$ |$$ |  \__|      
+  $$ |  $$ | $$ | $$ |$$  __$$ |$$ |  $$ |$$   ____|      $$ |  $$ |$$   ____| \____$$\ $$ | $$  _/   $$   ____|$$ |            
+$$$$$$\ $$ | $$ | $$ |\$$$$$$$ |\$$$$$$$ |\$$$$$$$\       $$ |  $$ |\$$$$$$$\ $$$$$$$  |$$ |$$$$$$$$\ \$$$$$$$\ $$ |            
+\______|\__| \__| \__| \_______| \____$$ | \_______|      \__|  \__| \_______|\_______/ \__|\________| \_______|\__|            
+                                $$\   $$ |                                                                                      
+                                \$$$$$$  |                                                                                      
+                                 \______/                                                                                       
+
+# Image Resizer - A batch image resizing tool
+# 
+# This Python script allows you to batch resize images in a specified input folder 
+# and save them in an output folder, resizing each image to multiple predefined 
+# dimensions. It supports multiple image formats such as PNG, JPG, and JPEG. 
+# The script utilizes multithreading to process images concurrently, improving 
+# performance for large image sets.
+# 
+# Features:
+# - Resize images to multiple sizes while maintaining aspect ratio.
+# - Process images concurrently using threading for faster performance.
+# - Supports common image formats (PNG, JPG, JPEG).
+# - Saves resized images in the same directory structure as the original files.
+# 
+# License:
+# This project is licensed under the MIT License.
+# 
+# =========================================== """
+
 # Configuration Variables
 input_folder = "Imgs"  # Folder containing the original images
 output_folder = "resized_images"  # Folder to save resized images
@@ -12,13 +46,16 @@ desired_widths = [100, 300, 500, 2000, 5000]  # Desired sizes for resizing
 # Constants
 VALID_IMAGE_EXTENSIONS = ('png', 'jpg', 'jpeg')  # Supported image formats
 
+#global Variables
+counter = 0
+counter_lock = Lock()
+
 def resize_image(input_path, output_path, sizes):
     """
     Resizes the image at input_path to the specified sizes and saves them to output_path.
     """
-    counter = 0
-    counter_lock = Lock()
-
+   
+    global counter, counter_lock
 
     # Ensure sizes is a list, even if a single size is passed
     if not isinstance(sizes, list):
@@ -56,7 +93,7 @@ def resize_image(input_path, output_path, sizes):
             # Increment the counter and display progress
             with counter_lock:
                 counter += 1
-                print(f"Resized {counter} images so far...")
+                print(f"Resized {counter} images so far...", end='\r')
 
     except Exception as e:
         print(f"Error processing {input_path}: {e}")
@@ -75,7 +112,24 @@ def batch_resize_nested(input_folder, output_folder, sizes, max_threads=None):
     Resizes all images in the input_folder and saves them to output_folder for the given sizes.
     Utilizes multiple threads to process images concurrently.
     """
+
     global counter
+
+    print("""
+$$$$$$\                                                   $$$$$$$\                      $$\                                     
+\_$$  _|                                                  $$  __$$\                     \__|                                    
+  $$ |  $$$$$$\$$$$\   $$$$$$\   $$$$$$\   $$$$$$\        $$ |  $$ | $$$$$$\   $$$$$$$\ $$\ $$$$$$$$\  $$$$$$\   $$$$$$\        
+  $$ |  $$  _$$  _$$\  \____$$\ $$  __$$\ $$  __$$\       $$$$$$$  |$$  __$$\ $$  _____|$$ |\____$$  |$$  __$$\ $$  __$$\       
+  $$ |  $$ / $$ / $$ | $$$$$$$ |$$ /  $$ |$$$$$$$$ |      $$  __$$< $$$$$$$$ |\$$$$$$\  $$ |  $$$$ _/ $$$$$$$$ |$$ |  \__|      
+  $$ |  $$ | $$ | $$ |$$  __$$ |$$ |  $$ |$$   ____|      $$ |  $$ |$$   ____| \____$$\ $$ | $$  _/   $$   ____|$$ |            
+$$$$$$\ $$ | $$ | $$ |\$$$$$$$ |\$$$$$$$ |\$$$$$$$\       $$ |  $$ |\$$$$$$$\ $$$$$$$  |$$ |$$$$$$$$\ \$$$$$$$\ $$ |            
+\______|\__| \__| \__| \_______| \____$$ | \_______|      \__|  \__| \_______|\_______/ \__|\________| \_______|\__|            
+                                $$\   $$ |                                                                                      
+                                \$$$$$$  |                                                                                      
+                                 \______/           
+Copyright (c) 2024 Owen Rempel          
+          """)
+
 
     start_time = time.time()  # Record the start time
 
