@@ -44,6 +44,7 @@ def resize_image(input_path, output_path, sizes):
     """
     Resizes the image at input_path to the specified sizes and saves them to output_path.
     """
+    
     global COUNT
     counter_lock = Lock()
 
