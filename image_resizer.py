@@ -38,13 +38,13 @@ DESIRED_WIDTHS = [100, 300, 500, 2000, 5000]  # Desired sizes for resizing
 VALID_IMAGE_EXTENSIONS = ('png', 'jpg', 'jpeg')  # Supported image formats
 
 
-count = 0
+COUNT = 0
 
 def resize_image(input_path, output_path, sizes):
     """
     Resizes the image at input_path to the specified sizes and saves them to output_path.
     """
-    global count
+    global COUNT
     counter_lock = Lock()
 
     # Ensure sizes is a list, even if a single size is passed
@@ -82,8 +82,8 @@ def resize_image(input_path, output_path, sizes):
 
             # Increment the counter and display progress
             with counter_lock:
-                count += 1
-                print(f"Resized {count} images so far...", end='\r')
+                COUNT += 1
+                print(f"Resized {COUNT} images so far...", end='\r')
 
     except FileNotFoundError as e:
         print(f"File not found: {input_path} - {e}")
@@ -145,7 +145,7 @@ Copyright (c) 2024 Owen Rempel
     end_time = time.time()  # Record the end time
     total_time = end_time - start_time
     print(f"Batch resizing completed in {total_time:.2f} seconds.")
-    print(f"Total images resized: {count}")
+    print(f"Total images resized: {COUNT}")
 
 
 # Ensure the script is not being used as a library
