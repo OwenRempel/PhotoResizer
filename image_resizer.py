@@ -37,13 +37,14 @@ DESIRED_WIDTHS = [100, 300, 500, 2000, 5000]  # Desired sizes for resizing
 # Constants
 VALID_IMAGE_EXTENSIONS = ('png', 'jpg', 'jpeg')  # Supported image formats
 
-global count
+
 count = 0
 
 def resize_image(input_path, output_path, sizes):
     """
     Resizes the image at input_path to the specified sizes and saves them to output_path.
     """
+    global count
     counter_lock = Lock()
 
     # Ensure sizes is a list, even if a single size is passed
