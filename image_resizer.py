@@ -2,6 +2,7 @@
 
 import os
 import time
+import json
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 
@@ -33,12 +34,15 @@ from PIL import Image
 INPUT_FOLDER = "Imgs"  # Folder containing the original images
 OUTPUT_FOLDER = "resized_images"  # Folder to save resized images
 DESIRED_WIDTHS = [100, 300, 500, 2000, 5000]  # Desired sizes for resizing
+JSON_FILE = False
 
 # Constants
 VALID_IMAGE_EXTENSIONS = ('png', 'jpg', 'jpeg')  # Supported image formats
 
 
 COUNT = 0
+
+JSON_OUT = []
 
 def resize_image(input_path, output_path, sizes):
     """
@@ -62,6 +66,8 @@ def resize_image(input_path, output_path, sizes):
             os.makedirs(os.path.dirname(original_output_path), exist_ok=True)
             img.save(original_output_path)
 
+            json_sizes = {}
+
             # Resize and save images for each size
             for size in sizes:
                 if original_width > original_height:
@@ -78,6 +84,9 @@ def resize_image(input_path, output_path, sizes):
 
                 # Save the resized image
                 resized_output_path = f"{base_name}_{size}px{ext}"
+
+                json_sizes[size] =  resized_output_path
+
                 os.makedirs(os.path.dirname(resized_output_path), exist_ok=True)
                 img_resized.save(resized_output_path)
 
@@ -92,6 +101,10 @@ def resize_image(input_path, output_path, sizes):
         print(f"I/O error occurred while processing {input_path}: {e}")
     except ValueError as e:
         print(f"Value error while processing {input_path}: {e}")
+
+    json_temp = {"og": original_output_path, "sizes": json_sizes}
+
+    JSON_OUT.append(json_temp)
 
 
 def process_file(args):
@@ -142,6 +155,10 @@ Copyright (c) 2024 Owen Rempel
     # Use ThreadPoolExecutor to process files concurrently
     with ThreadPoolExecutor(max_threads) as executor:
         executor.map(process_file, tasks)
+
+    if JSON_FILE:
+        with open("Images.json", 'w') as json_file:
+            json.dump(JSON_OUT, json_file, indent=4)
 
     end_time = time.time()  # Record the end time
     total_time = end_time - start_time
